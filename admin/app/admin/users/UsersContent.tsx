@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Search, Calendar, Eye, Edit2, Trash2, User, UserPlus, Coins, X, ChevronDown, Clock, FileText, Download, Zap } from 'lucide-react'
 import Pagination from '../../../components/Admin/Pagination'
+import ConfirmModal from '../../../components/UI/ConfirmModal'
 import { useRouter } from 'next/navigation'
 
 interface AdminUser {
@@ -92,6 +93,7 @@ export default function UsersContent() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
   const pageSize = 10
 
   const fetchUsers = async () => {
@@ -180,22 +182,21 @@ export default function UsersContent() {
   }
 
   const removeUser = async (id: number) => {
-    if (!confirm('Delete this user?')) return
-    
     try {
       setSaving(true)
       const response = await fetch(`/api/admin/users?id=${id}`, {
         method: 'DELETE',
       })
-      
+
       if (!response.ok) throw new Error('Failed to delete user')
-      
+
       setUsers(users.filter(u => u.id !== id))
       if (userProfile?.id === id) setUserProfile(null)
     } catch (err: any) {
       setError(err.message)
     } finally {
       setSaving(false)
+      setConfirmDeleteId(null)
     }
   }
 
@@ -392,6 +393,15 @@ export default function UsersContent() {
           <div className="p-8 text-center text-white/60">Loading users...</div>
         ) : (
           <>
+            {confirmDeleteId !== null && (
+              <ConfirmModal
+                title="Delete User"
+                message="Are you sure you want to delete this user? This action cannot be undone."
+                confirmText="Delete"
+                onConfirm={() => removeUser(confirmDeleteId)}
+                onCancel={() => setConfirmDeleteId(null)}
+              />
+            )}
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -428,7 +438,7 @@ export default function UsersContent() {
                             <button onClick={() => fetchUserProfile(row.id)} disabled={saving} className="p-2 rounded-md bg-white/5 hover:bg-white/10 disabled:opacity-50 transition-colors" aria-label="View details"><Eye className="w-4 h-4 text-white" /></button>
                             <button onClick={() => openEditUser(row)} disabled={saving} className="p-2 rounded-md bg-white/5 hover:bg-white/10 disabled:opacity-50 transition-colors" aria-label="Edit user"><Edit2 className="w-4 h-4 text-blue-300" /></button>
                             <button onClick={() => (row.credits ? openEditCredits(row.id, row.credits) : openAddCredits(row.id))} disabled={saving} className="p-2 rounded-md bg-white/5 hover:bg-white/10 disabled:opacity-50 transition-colors" aria-label="Manage credits"><Coins className="w-4 h-4 text-yellow-300" /></button>
-                            <button onClick={() => removeUser(row.id)} disabled={saving} className="p-2 rounded-md bg-white/5 hover:bg-white/10 disabled:opacity-50 transition-colors" aria-label="Delete"><Trash2 className="w-4 h-4 text-red-400" /></button>
+                            <button onClick={() => setConfirmDeleteId(row.id)} disabled={saving} className="p-2 rounded-md bg-white/5 hover:bg-white/10 disabled:opacity-50 transition-colors" aria-label="Delete"><Trash2 className="w-4 h-4 text-red-400" /></button>
                           </div>
                         </td>
                       </tr>
