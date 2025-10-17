@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Search, Calendar, Eye, Edit2, Trash2, User, UserPlus, Coins, X, ChevronDown, Clock, FileText, Download, Zap } from 'lucide-react'
 import Pagination from '../../../components/Admin/Pagination'
+import ConfirmModal from '../../../components/UI/ConfirmModal'
 import { useRouter } from 'next/navigation'
 
 interface AdminUser {
