@@ -182,22 +182,21 @@ export default function UsersContent() {
   }
 
   const removeUser = async (id: number) => {
-    if (!confirm('Delete this user?')) return
-    
     try {
       setSaving(true)
       const response = await fetch(`/api/admin/users?id=${id}`, {
         method: 'DELETE',
       })
-      
+
       if (!response.ok) throw new Error('Failed to delete user')
-      
+
       setUsers(users.filter(u => u.id !== id))
       if (userProfile?.id === id) setUserProfile(null)
     } catch (err: any) {
       setError(err.message)
     } finally {
       setSaving(false)
+      setConfirmDeleteId(null)
     }
   }
 
