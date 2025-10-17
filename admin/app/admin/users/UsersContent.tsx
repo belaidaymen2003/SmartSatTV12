@@ -393,6 +393,15 @@ export default function UsersContent() {
           <div className="p-8 text-center text-white/60">Loading users...</div>
         ) : (
           <>
+            {confirmDeleteId !== null && (
+              <ConfirmModal
+                title="Delete User"
+                message="Are you sure you want to delete this user? This action cannot be undone."
+                confirmText="Delete"
+                onConfirm={() => removeUser(confirmDeleteId)}
+                onCancel={() => setConfirmDeleteId(null)}
+              />
+            )}
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
