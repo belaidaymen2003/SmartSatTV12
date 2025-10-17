@@ -93,6 +93,7 @@ export default function UsersContent() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
   const pageSize = 10
 
   const fetchUsers = async () => {
