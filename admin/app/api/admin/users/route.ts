@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@/lib/generated/prisma'
-import * as bcrypt from 'bcrypt'
+import * as bcrypt from "bcrypt"
 
 const prisma = new PrismaClient()
 
@@ -24,11 +24,7 @@ interface CreditPayload {
   amount: number
 }
 
-const mockUsers = [
-  { id: 1, name: 'belaid', email: 'belaidaymen444@gmail.com', username: 'belaidaymen444', credits: 120, status: 'APPROVED', createdAt: new Date('2025-10-16').toISOString() },
-  { id: 2, name: 'John Doe', email: 'john@example.com', username: 'johndoe', credits: 50, status: 'APPROVED', createdAt: new Date('2025-10-15').toISOString() },
-  { id: 3, name: 'Jane Smith', email: 'jane@example.com', username: 'janesmith', credits: 200, status: 'APPROVED', createdAt: new Date('2025-10-14').toISOString() },
-]
+
 
 export async function GET(request: NextRequest) {
   try {
@@ -96,9 +92,7 @@ export async function GET(request: NextRequest) {
         ]
       }
 
-      const [total, users] = await Promise.all([
-        prisma.user.count({ where }),
-        prisma.user.findMany({
+      const  users = await prisma.user.findMany({
           where,
           select: {
             id: true,
@@ -118,8 +112,8 @@ export async function GET(request: NextRequest) {
           orderBy: { createdAt: 'desc' },
           skip: (page - 1) * pageSize,
           take: pageSize,
-        }),
-      ])
+        })
+        const total = await prisma.user.count()
 
       const formattedUsers = users.map((user) => ({
         id: user.id,
@@ -142,39 +136,8 @@ export async function GET(request: NextRequest) {
       })
     } catch (dbError: any) {
       console.error('Database error:', dbError.message)
-      
-      let filteredUsers = [...mockUsers]
-      if (search) {
-        filteredUsers = filteredUsers.filter(u =>
-          u.name.toLowerCase().includes(search) ||
-          u.email.toLowerCase().includes(search) ||
-          u.username.toLowerCase().includes(search)
-        )
-      }
+      return NextResponse.json({ 'Database error:': dbError.message }, { status: 500 })
 
-      const total = filteredUsers.length
-      const start = (page - 1) * pageSize
-      const paginatedUsers = filteredUsers.slice(start, start + pageSize)
-
-      const formattedUsers = paginatedUsers.map((user) => ({
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        username: user.username,
-        plan: 'Premium',
-        credits: user.credits,
-        status: user.status === 'APPROVED' ? 'Approved' : 'Banned',
-        comments: 0,
-        reviews: 0,
-        createdAt: new Date(user.createdAt).toISOString().split('T')[0],
-      }))
-
-      return NextResponse.json({
-        users: formattedUsers,
-        total,
-        page,
-        pageSize,
-      })
     }
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
